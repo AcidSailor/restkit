@@ -1,0 +1,30 @@
+version: "3"
+
+tasks:
+  lint:
+    desc: Run formatters + linters with autofix (mutates files)
+    cmds:
+      - golangci-lint fmt
+      - golangci-lint run --fix
+
+  ci:
+    desc: Read-only fmt + lint verification for CI (fail-fast)
+    cmds:
+      - golangci-lint fmt --diff
+      - golangci-lint run
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test ./...
+
+  check:
+    desc: Local composite — lint (mutating) + tests
+    cmds:
+      - task: lint
+      - task: test
+
+  update:
+    desc: Pull latest go-scaffolds template tooling (3-way merge; source untouched)
+    cmds:
+      - uvx copier update

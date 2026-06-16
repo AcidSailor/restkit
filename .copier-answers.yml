@@ -1,0 +1,10 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY.
+_commit: v1.0.0
+_src_path: gh:acidsailor/go-scaffolds
+author: Denis Shaporov / acidsailor
+author_email: d@shaporov.dev
+go_version: '1.26'
+module_path: github.com/acidsailor/restkit
+project_name: restkit
+project_type: library
+
