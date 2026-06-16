@@ -24,7 +24,17 @@ tasks:
       - task: lint
       - task: test
 
-  update:
-    desc: Pull latest go-scaffolds template tooling (3-way merge; source untouched)
+  build:
+    desc: Local snapshot release (validates GoReleaser config; no publish)
     cmds:
-      - uvx copier update
+      - goreleaser release --snapshot --clean --skip=publish
+
+  release:
+    desc: Tagged release via GoReleaser — GitHub Release + changelog (CI)
+    cmds:
+      - goreleaser release --clean
+
+  update:
+    desc: Pull latest go-scaffolds v1 template tooling (3-way merge; source untouched)
+    cmds:
+      - uvx copier update --vcs-ref v1

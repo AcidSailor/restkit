@@ -1,0 +1,14 @@
+version: 2
+
+# Library release: no binaries to build. GoReleaser only cuts the GitHub
+# Release with a changelog; GitHub serves the source tarball itself.
+builds:
+  - skip: true
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
