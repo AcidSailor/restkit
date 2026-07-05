@@ -195,6 +195,60 @@ func TestHookOrderAndQuery(t *testing.T) {
 	)
 }
 
+func TestDo_NilBodySendsNoRequestBody(t *testing.T) {
+	t.Parallel()
+	var gotBody, gotContentType string
+	var gotContentLength int64
+	srv := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			b, _ := io.ReadAll(r.Body)
+			gotBody = string(b)
+			gotContentType = r.Header.Get("Content-Type")
+			gotContentLength = r.ContentLength
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = io.WriteString(w, "{}")
+		}),
+	)
+	defer srv.Close()
+
+	c, err := restkit.New(srv.URL, restkit.WithName("moex"))
+	require.NoError(t, err)
+
+	_, err = restkit.Do[map[string]int](
+		context.Background(), c, http.MethodGet, "/x", nil, nil,
+	)
+	require.NoError(t, err)
+	assert.Empty(t, gotBody, "nil body must send no request body, not `null`")
+	assert.Empty(t, gotContentType, "no Content-Type without a body")
+	assert.Zero(t, gotContentLength)
+}
+
+func TestDo_NonNilBodyIsSent(t *testing.T) {
+	t.Parallel()
+	var gotBody, gotContentType string
+	srv := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			b, _ := io.ReadAll(r.Body)
+			gotBody = string(b)
+			gotContentType = r.Header.Get("Content-Type")
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = io.WriteString(w, "{}")
+		}),
+	)
+	defer srv.Close()
+
+	c, err := restkit.New(srv.URL, restkit.WithName("moex"))
+	require.NoError(t, err)
+
+	_, err = restkit.Do[map[string]int](
+		context.Background(), c, http.MethodPost, "/x",
+		map[string]int{"a": 1}, nil,
+	)
+	require.NoError(t, err)
+	assert.JSONEq(t, `{"a":1}`, gotBody)
+	assert.Equal(t, "application/json", gotContentType)
+}
+
 func TestValues_NilSafe(t *testing.T) {
 	t.Parallel()
 	s := "call"
