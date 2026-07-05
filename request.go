@@ -117,20 +117,27 @@ func (c *Client) do(
 	body any,
 	hooks []RequestHook,
 ) ([]byte, error) {
-	raw, err := json.Marshal(body)
-	if err != nil {
-		return nil, &RequestError{
-			Name: c.name,
-			Op:   OpMarshal,
-			Err:  err,
+	// A nil body sends no request body at all (not the JSON literal `null`),
+	// so GETs stay body-less — some servers/CDNs reject a GET that carries a
+	// body. http.NewRequestWithContext maps a nil io.Reader to no body.
+	var bodyReader io.Reader
+	if body != nil {
+		raw, err := json.Marshal(body)
+		if err != nil {
+			return nil, &RequestError{
+				Name: c.name,
+				Op:   OpMarshal,
+				Err:  err,
+			}
 		}
+		bodyReader = bytes.NewReader(raw)
 	}
 
 	req, err := http.NewRequestWithContext(
 		ctx,
 		method,
 		c.baseURL+path,
-		bytes.NewReader(raw),
+		bodyReader,
 	)
 	if err != nil {
 		return nil, &RequestError{
