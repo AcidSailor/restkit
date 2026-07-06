@@ -276,3 +276,23 @@ func TestValuesBool(t *testing.T) {
 	_, ok := v.Values["c"]
 	assert.False(t, ok, "nil pointer omits the key")
 }
+
+func TestPathf_EscapesSegments(t *testing.T) {
+	// A value with URL-significant characters is escaped, not interpolated raw.
+	assert.Equal(t,
+		"/v1/accounts/a%2Fb%20c/orders",
+		restkit.Pathf("/v1/accounts/%s/orders", "a/b c"),
+	)
+	// Two params.
+	assert.Equal(t,
+		"/v1/accounts/acc%23/orders/ord%3F",
+		restkit.Pathf("/v1/accounts/%s/orders/%s", "acc#", "ord?"),
+	)
+	// A legal path sub-delimiter (Finam's SBER@MISX form) is left intact.
+	assert.Equal(t,
+		"/v1/assets/SBER@MISX",
+		restkit.Pathf("/v1/assets/%s", "SBER@MISX"),
+	)
+	// No args is a plain format string.
+	assert.Equal(t, "/v1/assets", restkit.Pathf("/v1/assets"))
+}
