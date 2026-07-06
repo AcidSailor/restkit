@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -82,6 +83,24 @@ func (v Values) Bool(key string, p *bool) Values {
 		v.Set(key, strconv.FormatBool(*p))
 	}
 	return v
+}
+
+// Pathf builds a request path, percent-escaping each interpolated argument as a
+// single path segment. It is the path-side counterpart to [Values] (which
+// escapes query parameters): pass a format like "/v1/accounts/%s/orders/%s"
+// with raw parameter values, and a value containing '/', '?', '#', or a space
+// is escaped rather than corrupting the URL (injecting a segment, starting a
+// query string, etc.).
+//
+// Every arg is interpolated with %s; use [fmt.Sprintf] directly if you need
+// other verbs. An empty arg yields an empty segment (the server decides how to
+// handle it) — Pathf validates escaping, not presence.
+func Pathf(format string, args ...string) string {
+	escaped := make([]any, len(args))
+	for i, a := range args {
+		escaped[i] = url.PathEscape(a)
+	}
+	return fmt.Sprintf(format, escaped...)
 }
 
 // Do issues the request and decodes the 2xx JSON body into T. A non-2xx is a
