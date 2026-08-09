@@ -163,4 +163,4 @@ if err != nil {
 
 ## License
 
-Licensed under the GNU Affero General Public License v3. See [LICENSE](LICENSE).
+Licensed under Apache-2.0. See [LICENSE](LICENSE).
