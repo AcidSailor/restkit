@@ -277,6 +277,37 @@ func TestValuesBool(t *testing.T) {
 	assert.False(t, ok, "nil pointer omits the key")
 }
 
+// day is a package-local type with a nil-safe pointer-receiver QueryValuer.
+type day struct{ s string }
+
+func (d *day) QueryValue() (string, bool) {
+	if d == nil || d.s == "" {
+		return "", false
+	}
+	return d.s, true
+}
+
+func TestValuesParam(t *testing.T) {
+	t.Parallel()
+	var typedNil *day
+	v := restkit.NewValues().
+		Param("set", &day{s: "2026-09-26"}).
+		Param("zero", &day{}).
+		Param("nilIface", nil).
+		Param("typedNil", typedNil)
+	assert.Equal(t, "set=2026-09-26", v.Encode())
+}
+
+func TestValuesParam_ChainsWithStr(t *testing.T) {
+	t.Parallel()
+	s := "SBER"
+	v := restkit.NewValues().
+		Str("symbol", &s).
+		Param("from", &day{s: "2026-01-02"}).
+		Str("omit", nil)
+	assert.Equal(t, "from=2026-01-02&symbol=SBER", v.Encode())
+}
+
 func TestPathf_EscapesSegments(t *testing.T) {
 	// A value with URL-significant characters is escaped, not interpolated raw.
 	assert.Equal(t,

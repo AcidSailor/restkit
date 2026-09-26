@@ -128,8 +128,27 @@ q := restkit.NewValues().
 restkit.Do[Result](ctx, client, "GET", "/items", nil, restkit.WithQuery(q))
 ```
 
-Setters: `Str`, `Int`, `Int32`, `Int64`, `Float`, `Bool`. For required or
-bespoke values, use the embedded `url.Values.Set` directly.
+Setters: `Str`, `Int`, `Int32`, `Int64`, `Float`, `Bool`. For required values,
+use the embedded `url.Values.Set` directly.
+
+Package-local types chain through `Param` by implementing `QueryValuer`
+(`QueryValue() (string, bool)`; `ok=false` skips the key). Use a pointer
+receiver and handle a nil receiver, since a nil `*T` in the interface is
+non-nil:
+
+```go
+func (d *Date) QueryValue() (string, bool) {
+	if d == nil {
+		return "", false
+	}
+	return d.Format("2006-01-02"), true
+}
+
+q := restkit.NewValues().
+	Str("symbol", filter.Symbol).
+	Param("from", filter.From). // *Date
+	Values
+```
 
 ## Errors
 
