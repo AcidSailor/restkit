@@ -85,6 +85,23 @@ func (v Values) Bool(key string, p *bool) Values {
 	return v
 }
 
+// QueryValuer renders a value as a query parameter; ok=false skips it.
+type QueryValuer interface{ QueryValue() (string, bool) }
+
+// Param sets key from p unless p is nil or reports ok=false. It lets
+// package-local types (dates, enums) chain with the built-in setters.
+// Implement QueryValuer on a pointer receiver and return ok=false for a nil
+// receiver: a nil *T stored in the interface is non-nil, so Param still calls it.
+func (v Values) Param(key string, p QueryValuer) Values {
+	if p == nil {
+		return v
+	}
+	if s, ok := p.QueryValue(); ok {
+		v.Set(key, s)
+	}
+	return v
+}
+
 // Pathf builds a request path, percent-escaping each interpolated argument as a
 // single path segment. It is the path-side counterpart to [Values] (which
 // escapes query parameters): pass a format like "/v1/accounts/%s/orders/%s"

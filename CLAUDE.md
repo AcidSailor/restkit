@@ -61,7 +61,9 @@ The whole public API is three concepts wired together:
    `WithQuery(url.Values)` is a built-in hook that **merges** (not clobbers) into
    existing query params. `Values` / `NewValues()` is a generic, nil-safe
    `url.Values` builder whose setters (`Str`, `Int`, `Int32`, `Int64`, `Float`,
-   `Bool`) skip nil pointers and chain.
+   `Bool`) skip nil pointers and chain. `Param(key, QueryValuer)` chains
+   package-local types; implementations use pointer receivers and return
+   ok=false for a nil receiver (a typed-nil in the interface is non-nil).
 
 ### Error model (errors.go)
 
