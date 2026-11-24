@@ -27,7 +27,7 @@ defaults) is injected through a `RequestHook`.
 go get github.com/acidsailor/restkit
 ```
 
-Requires Go 1.26+.
+Requires Go 1.27.0+.
 
 ## Quick start
 
